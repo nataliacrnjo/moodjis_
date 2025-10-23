@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 75">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #677c7c;
+        font-family: CascadiaCodeRoman-Bold, 'Cascadia Code';
+        font-size: 32px;
+        font-variation-settings: 'wght' 700;
+        font-weight: 700;
+      }
+    </style>
+  </defs>
+  <text class="cls-1" transform="translate(56.22 48.59)"><tspan x="0" y="0">TAKE PHOTO</tspan></text>
+</svg>
