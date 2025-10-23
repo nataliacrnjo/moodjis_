@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+ <img src="emoji title-04.svg" alt="Take Photo Title" class="title-svg">
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  max-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #46b9e4 5%, #ffffff 100% );
+}
+        .back-button-container {
+      position: absolute;
+      top: 20px;   /* space from top */
+      left: 20px;  /* space from left */
+      z-index: 2;
+    }
+
+    .back-button {
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
+ .center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh; /* full viewport height */
+  overflow: hidden;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+
+    #preview, #camera, #canvas {
+      display: none;
+      margin-top: 4px;
+      border-radius: 8px;
+      max-width: 100vh;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      max-height: 40vh
+}
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #005bb5; }
+
+    .title-svg {
+  display: block;
+  margin: 20px auto;
+  max-width: 300px; /* adjust size as needed */
+  height: auto;
+}
+
+
+.svg-btn {
+  width: 120px; /* bigger button */
+  height: 60px;
+  margin: 10px;
+  padding: 0;
+  background: transparent; /* fully transparent */
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 0; /* remove rounded corners */
+  box-shadow: none; /* no shadow by default */
+
+}
+
+.svg-btn:hover {
+  transform: scale(1.1);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+input[type="file"] {
+  display: none;
+}
+.custom-file-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+  </style>
+</head>
+<body>
+ <body>
+<div class="back-button-container" style="position:absolute; top:20px; left:20px;">
+  <img src="buttons-11.svg" class="svg-btn" onclick="goBack()" style="width:40px; height:40px;">
+</div>
+  <div class="center-container">
+
+    <!-- Buttons Row -->
+    <div class="button-row">
+      <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
+      <img src="buttons-03.svg" class="svg-btn" alt="Use Camera" onclick="openCamera()">
+      <img src="buttons-04.svg" class="svg-btn" alt="Close Camera" id="closeCamBtn" style="display:none;" onclick="closeCamera()">
+      <img src="buttons-07.svg" class="svg-btn" alt="Take Photo" id="takePhotoBtn" style="display:none;" onclick="startCountdownAndTakePhoto()">
+     <img src="buttons-05.svg" class="svg-btn" alt="Retake Photo" id="retakeBtn" style="display:none;" onclick="retakePhoto()">
+
+      <img src="buttons-06.svg" class="svg-btn" alt="Next Page" id="nextBtn" style="display:none;" onclick="goToDecorate()">
+    </div>
+ <p id="countdownText" style="display:none; font-size:24px; color:#3286f2; margin-top:10px;"></p>
+    <!-- Camera and Preview -->
+    <video id="camera" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <img id="preview">
+
+  </div>
+</body>
+
+  
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+    // Preview uploaded image
+    function previewImage(event) {
+      const preview = document.getElementById('preview');
+      preview.src = URL.createObjectURL(event.target.files[0]);
+      preview.style.display = 'block';
+      showNextButton();
+      showRetakeButton();
+      // Save image as data URL for next page
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        localStorage.setItem('userPhoto', e.target.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+      document.getElementById('camera').style.display = 'none';
+      document.getElementById('closeCamBtn').style.display = 'none';
+      document.getElementById('takePhotoBtn').style.display = 'none';
+      if (window.stream) {
+        window.stream.getTracks().forEach(track => track.stop());
+        window.stream = null;
+      }
+    }
+
+    // Open camera
+    async function openCamera() {
+      const video = document.getElementById('camera');
+      const preview = document.getElementById('preview');
+      preview.style.display = 'none';
+      video.style.display = 'block';
+      document.querySelector('[alt="Use Camera"]').style.display = 'none';
+
+      document.getElementById('closeCamBtn').style.display = 'inline-block';
+      document.getElementById('takePhotoBtn').style.display = 'inline-block';
+      document.getElementById('retakeBtn').style.display = 'none';
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        window.stream = stream;
+      } catch (err) {
+        alert('Camera access denied or not available.');
+      }
+    }
+
+    // Close camera
+    function closeCamera() {
+      const video = document.getElementById('camera');
+      video.style.display = 'none';
+      document.getElementById('closeCamBtn').style.display = 'none';
+      document.getElementById('takePhotoBtn').style.display = 'none';
+
+      document.querySelector('[alt="Use Camera"]').style.display = 'inline-block';
+      if (window.stream) {
+        window.stream.getTracks().forEach(track => track.stop());
+        window.stream = null;
+      }
+    }
+
+    // Countdown before taking photo
+ function startCountdownAndTakePhoto() {
+  const countdownDisplay = document.getElementById('countdownText');
+  countdownDisplay.style.display = 'block';
+  countdownDisplay.innerText = 'Get ready... 3';
+
+  let seconds = 3;
+  const countdown = setInterval(() => {
+    seconds--;
+    countdownDisplay.innerText = `Get ready... ${seconds}`;
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      countdownDisplay.style.display = 'none';
+      takePhoto(); // ✅ Automatically take photo
+    }
+  }, 1000);
+}
+
+
+  // Take photo from video stream
+  function takePhoto() {
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataURL = canvas.toDataURL('image/png');
+    preview.src = dataURL;
+    preview.style.display = 'block';
+    canvas.style.display = 'none';
+    video.style.display = 'none';
+    document.getElementById('takePhotoBtn').style.display = 'none';
+    document.getElementById('closeCamBtn').style.display = 'none';
+    showNextButton();
+    showRetakeButton();
+    localStorage.setItem('userPhoto', dataURL);
+    if (window.stream) {
+      window.stream.getTracks().forEach(track => track.stop());
+      window.stream = null;
+    }
+  }
+
+  function showNextButton() {
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function showRetakeButton() {
+    document.getElementById('retakeBtn').style.display = 'inline-block';
+  }
+
+ // Retake photo logic without countdown
+  function retakePhoto() {
+    document.getElementById('preview').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    // Open camera and let user manually click the Take Photo button
+    openCamera();
+  }
+
+    // Go to decorate page
+    function goToDecorate() {
+      window.location.href = 'decorate.html';
+    }
+  </script>
+</body>
+</html>

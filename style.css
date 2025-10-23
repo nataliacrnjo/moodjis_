@@ -1,0 +1,10 @@
+/* Define Cascadia Code */
+@font-face {
+    font-family: 'Cascadia Code';
+    src: url('https://fonts.googleapis.com/css?family=Cascadia Code') format('truetype');
+}
+
+/* Define the base font-family for all pages */
+body {
+    font-family: 'Cascadia Code', 'Consolas', 'monospace';
+}

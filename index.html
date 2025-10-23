@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+    <link rel="stylesheet" href="styles.css">
+<style> 
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to bottom, #46b9e4 5%, #ffffff 100%);
+    font-family: Arial, sans-serif;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15); 
+  }
+}
+
+.title {
+  width: 49.5vw;
+  color: #333;
+  margin-bottom: -5vh;
+  animation: heartbeat 4s ease-in-out infinite; /* slower and smoother */
+  transform-origin: center;
+}
+  
+  .subtitle {
+    width: 30.5vw;
+    color: #333;
+    margin-bottom: 1vh;
+  }
+
+  .button-container {
+    text-align: center;
+  }
+
+  .svg-button {
+    width: 15.6vw;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin: 0.93vh;
+  }
+
+  .svg-button:hover {
+    transform: scale(1.1);
+  }
+
+  .about-button {
+    background-color: #dc143c;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin: 0.93vh;
+    z-index: 999999;
+  }
+
+  .play-button:hover,
+  .about-button:hover {
+    background-color: #8b0000;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to top, #46b9e4 0%, #ffffff 100%);
+    z-index: 1000;
+    justify-content: flex-start;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 0.46vh;
+  }
+
+  .modal-content {
+    max-width: 100vw;
+    font-size: 2.2vh;
+    line-height: 1.5;
+  }
+
+  .close-button {
+    position: absolute;
+    top: calc(10 / 1080 * 100vh); /* ≈ 0.93vh */
+    right: calc(40 / 1920 * 100vw); /* ≈ 2.08vw */
+    font-size: calc(40 / 1080 * 100vh); /* ≈ 3.7vh */
+    color: white;
+    cursor: pointer;
+    -webkit-text-stroke: 1.5px #3286f2;
+    text-shadow: 0 0 1px #3286f2, 0 0 4px #3286f2, 0 0 5px #3286f2, 0 0 6px #3286f2;
+    z-index: 1001;
+  }
+
+  .AboutUs {
+    width: 100vw;
+    max-width: calc(2000 / 1920 * 100vw); /* ≈ 104.17vw */
+    height: auto;
+    position: absolute;
+    top: calc(-20 / 1080 * 100vh); /* ≈ -1.85vh */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .AboutText {
+    width: 60vw;
+    max-width: calc(2000 / 1920 * 100vw); /* ≈ 104.17vw */
+    height: auto;
+    position: absolute;
+    top: 45vh; /* ≈ 38.89vh */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+  }
+
+  .AboutDecoration1,
+  .AboutDecoration2 {
+    width: 5vw;
+    height: auto;
+    position: absolute;
+    top: calc(380 / 1080 * 100vh); /* ≈ 35.19vh */
+    transform: translateX(-50%);
+    z-index: 1001;
+  }
+
+  .AboutDecoration1 {
+    left: 10%;
+  }
+
+  .AboutDecoration2 {
+    right: 5%;
+  }
+
+  #ingredientContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 110vw;
+    height: 120vh;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .ingredient {
+    position: absolute;
+    width: auto;
+    height: auto;
+    opacity: 100;
+  }
+
+  .ingredient img {
+    display: block;
+  }
+
+
+  .subtitle-style-45 {
+    width: 60vw !important;
+    margin-bottom: 1vh !important;
+  }
+
+  .subtitle-style-44 {
+    width: 30vw;
+    margin-bottom: 1vh;
+  }
+
+  .subtitle-style-42 {
+    width: 32vw;
+    margin-bottom: 0vh;
+  }
+ .star {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: white;
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  box-shadow: 0 0 8px white;
+  filter: drop-shadow(0 0 8px white);
+  opacity: 0;
+  animation: fall 0.8s linear forwards;
+  animation-fill-mode: forwards;
+  animation-delay: var(--delay);
+  animation-play-state: paused;
+  z-index: 1;
+}
+.star.animate {
+  animation-play-state: running;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) rotate(var(--rotation));
+    opacity: 0;
+  }
+}
+
+</style>
+
+<body data-new-gr-c-s-check-loaded="14.1252.0" data-gr-ext-installed="">
+  <div class="sky"></div>
+    <img class="title" src="emoji title-01.svg">
+    <img class="subtitle" src="emoji title-02.svg">
+    <div class="button-container">
+      <img src="buttons-01.svg" alt="Play Button" class="svg-button" onclick="window.location.href='start.html'">
+      <img src="buttons-02.svg" alt="About Button" class="svg-button" onclick="openModal()">
+    </div>
+
+   <!-- Modal -->
+<div id="aboutModal" class="modal">
+  <span class="close-button" onclick="closeModal()">×</span>
+  <div class="modal-content">
+    <img src="emoji title-03.svg" 
+         alt="About Us" class="about-image">
+  </div>
+
+</div>
+
+<style>
+/* Modal default hidden */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; 
+  top: 0;
+  width: 100%; 
+  height: 100%;
+  background-color: rgba(88, 88, 88, 0.7); /* dark overlay */
+}
+
+/* Modal content */
+.modal-content {
+  position: relative;
+  margin: 5% auto;
+  padding: 0;
+  max-width: 80%;
+  text-align: center;
+}
+
+/* Image inside modal */
+.about-image {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Close button */
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  font-size: 40px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+}
+.close-button:hover {
+  color: #ff5555;
+}
+</style>
+
+<script>
+function openModal() {
+  document.getElementById("aboutModal").style.display = "block";
+}
+function closeModal() {
+  document.getElementById("aboutModal").style.display = "none";
+}
+  const sky = document.querySelector('.sky');
+
+function createStar() {
+  const star = document.createElement('div');
+  star.classList.add('star');
+
+  // Random horizontal position
+  star.style.left = Math.random() * window.innerWidth + 'px';
+
+  // Random size
+  const size = Math.random() * 30 + 20;
+  star.style.width = size + 'px';
+  star.style.height = size + 'px';
+
+  // Random rotation
+  const rotation = Math.random() * 720;
+  star.style.setProperty('--rotation', rotation + 'deg');
+
+  // Random delay
+  const delay = Math.random() * 1.5;
+  star.style.setProperty('--delay', `${delay}s`);
+
+  // Glow color
+  const colors = ['white', 'gold', 'deepskyblue', 'hotpink'];
+  const glow = colors[Math.floor(Math.random() * colors.length)];
+  star.style.boxShadow = `0 0 12px ${glow}`;
+  star.style.filter = `drop-shadow(0 0 8px ${glow})`;
+
+  sky.appendChild(star);
+
+  // Trigger animation after delay
+  setTimeout(() => {
+    star.classList.add('animate');
+  }, delay * 1000);
+
+  // Remove star after animation
+  setTimeout(() => {
+    star.remove();
+  }, (delay + 0.8) * 1000);
+}
+
+setInterval(createStar, 200);
+
+</script>
+
+ <!-- Upload Screen -->
+  <div id="uploadScreen" class="screen">
+    <h2>Upload or Take a Photo</h2>
+    <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
+    <button onclick="openCamera()">Use Camera</button>
+    <video id="camera" autoplay playsinline></video>
+    <img id="preview">
+    <br>
+    <button onclick="goToEditor()">Next</button>
+  </div>
+
+  <style>
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+    #camera {
+      display: none;
+      width: 300px;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    #preview {
+      display: none;
+      width: 300px;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #3286f2;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #005bb5;
+    }
+</style>
+      
