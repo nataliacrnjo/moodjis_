@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 155 55">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        fill: url(#New_Pattern_Swatch_1);
+      }
+
+      .cls-3, .cls-7 {
+        fill: none;
+      }
+
+      .cls-4 {
+        fill: url(#Sky_5);
+        opacity: .2;
+      }
+
+      .cls-5 {
+        fill: url(#New_Pattern_Swatch_1-2);
+      }
+
+      .cls-6 {
+        fill: #fff;
+      }
+
+      .cls-8 {
+        fill: #677c7c;
+        font-family: CascadiaCodeRoman-Bold, 'Cascadia Code';
+        font-size: 11px;
+        font-variation-settings: 'wght' 700;
+        font-weight: 700;
+      }
+
+      .cls-7 {
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: .55px;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="8070.84" y1="-8190.76" x2="8070.84" y2="-8138.51" gradientTransform="translate(-8042.67 -8138.51) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9ccde9"/>
+      <stop offset=".43" stop-color="#fff"/>
+      <stop offset=".52" stop-color="#fbfdf8"/>
+      <stop offset=".63" stop-color="#f0f7e7"/>
+      <stop offset=".77" stop-color="#dfeecb"/>
+      <stop offset=".91" stop-color="#c6e1a3"/>
+      <stop offset=".99" stop-color="#b7d98a"/>
+    </linearGradient>
+    <pattern id="New_Pattern_Swatch_1" data-name="New Pattern Swatch 1" x="0" y="0" width="56.33" height="52.24" patternTransform="translate(1545.61 -156.24) scale(1.22 1)" patternUnits="userSpaceOnUse" viewBox="0 0 56.33 52.24">
+      <g>
+        <rect class="cls-3" x="0" width="56.33" height="52.24"/>
+        <rect class="cls-1" x="0" width="56.33" height="52.24"/>
+      </g>
+    </pattern>
+    <pattern id="New_Pattern_Swatch_1-2" data-name="New Pattern Swatch 1" patternTransform="translate(1543.4 -158.45) scale(1.22 1)" xlink:href="#New_Pattern_Swatch_1"/>
+    <linearGradient id="Sky_5" data-name="Sky 5" x1="76.5" y1="47.78" x2="76.5" y2="7.78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dee8e5"/>
+      <stop offset=".5" stop-color="#bcd5df"/>
+      <stop offset="1" stop-color="#00a0c7"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <g>
+      <rect class="cls-2" x="4.37" y="9.99" width="148.67" height="40" rx="20" ry="20"/>
+      <rect class="cls-5" x="2.16" y="7.78" width="148.67" height="40" rx="20" ry="20"/>
+    </g>
+    <g>
+      <rect class="cls-7" x="4.37" y="9.99" width="148.67" height="40" rx="20" ry="20"/>
+      <rect class="cls-7" x="2.16" y="7.78" width="148.67" height="40" rx="20" ry="20"/>
+    </g>
+    <rect class="cls-6" x="2.16" y="7.78" width="148.67" height="40" rx="20" ry="20"/>
+    <rect class="cls-4" x="2.16" y="7.78" width="148.67" height="40" rx="20" ry="20"/>
+    <rect class="cls-7" x="2.16" y="7.78" width="148.67" height="40" rx="20" ry="20"/>
+  </g>
+  <text class="cls-8" transform="translate(18.41 32.02)"><tspan x="0" y="0">SAVE ON YOUR PHONE</tspan></text>
+</svg>

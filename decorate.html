@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Decorate Your Photo</title>
+  <style>
+    html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+/* Flex container */
+.customisation-wrap {
+  height: 100vh;
+  display: flex;
+}
+.wrap-flex {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Left sidebar */
+.wrap-left {
+  width: 220px;
+  background: url("sidebar-01.svg") no-repeat center center;
+  background-size: cover;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 50; /* keep sidebar above frame stickers */
+}
+
+/* Tabs */
+.tab-header {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px;
+  cursor: pointer;
+  border: none;
+  background: #ddd;
+  border-radius: 6px;
+  font-weight: bold;
+  
+}
+.tab-btn.active {
+  background: #3286f2;
+  color: #fff;
+}
+
+/* Tab content container */
+.tab-content {
+  flex: 1 1 auto;
+  overflow-y: hidden;
+}
+
+/* Stickers grid */
+.choices-wrap-stickers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  flex: 1 1 auto;           /* allow to grow and fill sidebar */
+  overflow-y: auto;         /* scroll if more stickers */
+  height: auto;             /* remove fixed height */
+  max-height: 100%;         /* don't overflow sidebar */
+}
+.choices-wrap-stickers-2 {
+  display: grid;
+  gap: 8px;
+  flex: 1 1 auto;           /* allow to grow and fill sidebar */
+  overflow-y: auto;         /* scroll if more stickers */
+  height: auto;             /* remove fixed height */
+  max-height: 100%;         /* don't overflow sidebar */
+}
+.single-choice img.sticker {
+  width: 100%;
+  aspect-ratio: 1/1;
+  cursor: pointer;
+  border-radius: 8px;
+  background: none;
+  padding: 4px;
+  height: 90px; /* matches the calculation above */
+}
+.back-button-container { 
+  position: absolute; 
+  top: 20px;   /* space from top */ 
+  left: 40px;  /* space from left */ 
+  z-index: 2;
+} 
+
+.back-button { 
+  cursor: pointer; 
+  pointer-events: auto;
+  width: 40px; 
+  height: 40px;
+}
+.instruction-button {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px; /* space between buttons */
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background: none;
+  position: relative;
+  max-width: 600px;
+  text-align: center;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.instruction-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Right canvas */
+.wrap-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+background: linear-gradient(to bottom, #46b9e4 5%, #ffffff 100% );
+  position: relative;
+}
+
+#canvas {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+  border: 6px solid #ffffff;
+  border-radius: 10px;
+  display: block;
+  z-index: 1;
+}
+
+#stickerLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto; /* allow interactions with stickers */
+  z-index: 2;
+}
+
+#downloadBtn.icon-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: inline-block;
+  cursor: pointer;
+}
+
+#downloadBtn img {
+  width: 64px;
+  height: 64px;
+  display: block;
+}
+
+.draggable-sticker {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  cursor: move;
+  pointer-events: auto;
+  user-select: none;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 0 8px #3286f2;
+
+}
+.draggable-sticker {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  cursor: move;
+  pointer-events: auto;
+  user-select: none;
+  transition: box-shadow 0.2s;
+  box-shadow: none; /* removed default shadow so it's hidden when not active */
+}
+
+.draggable-sticker.active {
+  box-shadow: 0 0 8px #3286f2;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid #3286f2;
+  border-radius: 3px;
+  z-index: 3;
+}
+.rotate-handle {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border: 2px solid #3286f2;
+  border-radius: 50%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  font-size: 0px
+}
+
+/* Hide controls unless sticker is active */
+.draggable-sticker .resize-handle,
+.draggable-sticker .delete-sticker-btn,
+.draggable-sticker .rotate-handle {
+  display: none;
+}
+.draggable-sticker.active .resize-handle,
+.draggable-sticker.active .delete-sticker-btn,
+.draggable-sticker.active .rotate-handle {
+  display: block;
+}
+.icon-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  margin-top: 10px;
+  display: inline-block;
+  cursor: pointer;
+}
+.tab-btn img {
+  margin-right: 6px;
+}
+
+.download-btn-container {
+  position: absolute;
+  top: 10px;
+  right: 40px;
+  z-index: 10;
+}
+.top-left { top: 0; left: 0; cursor: nwse-resize; }
+.top-right { top: 0; right: 0; cursor: nesw-resize; }
+.bottom-left { bottom: 0; left: 0; cursor: nesw-resize; }
+.bottom-right { bottom: 0; right: 0; cursor: nwse-resize; }
+
+.delete-sticker-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 4;
+}
+
+
+  </style>
+</head>
+<body>
+  <body>
+    
+  <div class="customisation-wrap">
+    <div class="wrap-flex">
+
+      <!-- sidebar -->
+      <div class="wrap-left">
+        <!-- Tabs -->
+        <div class="tab-header">
+          <button class="tab-btn active" data-target="stickers" style="background:transparent; border:none; box-shadow:none; padding:0; margin-top:10px;">  <img src="buttons-09.svg" alt="Stickers"> </button>
+          <button class="tab-btn" data-target="text" style="background:transparent; border:none; box-shadow:none; padding:0; margin-top:10px;"> <img src="buttons-10.svg" alt="Texts"> </button>
+        </div>
+
+        
+        <div class="tab-content" id="stickers">
+          <div class="choices-wrap choices-wrap-stickers">
+            <div class="single-choice"><img src="emoji-02.svg" class="sticker" onclick="addSticker('emoji-02.svg')"></div>
+            <div class="single-choice"><img src="emoji-03.svg" class="sticker" onclick="addSticker('emoji-03.svg')"></div>
+            <div class="single-choice"><img src="emoji-04.svg" class="sticker" onclick="addSticker('emoji-04.svg')"></div>
+            <div class="single-choice"><img src="emoji-05.svg" class="sticker" onclick="addSticker('emoji-05.svg')"></div>
+            <div class="single-choice"><img src="emoji-06.svg" class="sticker" onclick="addSticker('emoji-06.svg')"></div>
+            <div class="single-choice"><img src="emoji-07.svg" class="sticker" onclick="addSticker('emoji-07.svg')"></div>
+            <div class="single-choice"><img src="emoji-08.svg" class="sticker" onclick="addSticker('emoji-08.svg')"></div>
+            <div class="single-choice"><img src="emoji-09.svg" class="sticker" onclick="addSticker('emoji-09.svg')"></div>
+            <div class="single-choice"><img src="emoji-10.svg" class="sticker" onclick="addSticker('emoji-10.svg')"></div>
+            <div class="single-choice"><img src="emoji-11.svg" class="sticker" onclick="addSticker('emoji-11.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-02.svg" class="sticker" onclick="addSticker('emoji 2-02.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-03.svg" class="sticker" onclick="addSticker('emoji 2-03.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-04.svg" class="sticker" onclick="addSticker('emoji 2-04.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-05.svg" class="sticker" onclick="addSticker('emoji 2-05.svg')"></div>   
+            <div class="single-choice"><img src="emoji 2-06.svg" class="sticker" onclick="addSticker('emoji 2-06.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-07.svg" class="sticker" onclick="addSticker('emoji 2-07.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-08.svg" class="sticker" onclick="addSticker('emoji 2-08.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-09.svg" class="sticker" onclick="addSticker('emoji 2-09.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-10.svg" class="sticker" onclick="addSticker('emoji 2-10.svg')"></div>
+            <div class="single-choice"><img src="emoji 2-11.svg" class="sticker" onclick="addSticker('emoji 2-11.svg')"></div>
+          </div>
+        </div>
+
+       <div class="tab-content" id="text" style="display: none;">
+  <div class="choices-wrap choices-wrap-stickers-2">
+    <div class="single-choice"><img src="frames-01.svg" class="sticker" onclick="addSticker('frames-01.svg', true)"></div>
+      <div class="single-choice"><img src="frames-02.svg" class="sticker" onclick="addSticker('frames-02.svg', true)"></div>
+      <div class="single-choice"><img src="frames-03.svg" class="sticker" onclick="addSticker('frames-03.svg', true)"></div>
+      <div class="single-choice"><img src="frames-04.svg" class="sticker" onclick="addSticker('frames-04.svg', true)"></div>
+      <div class="single-choice"><img src="frames-05.svg" class="sticker" onclick="addSticker('frames-05.svg', true)"></div>
+      <div class="single-choice"><img src="frames-06.svg" class="sticker" onclick="addSticker('frames-06.svg', true)"></div>
+  </div>
+</div>
+
+      </div>
+<div class="wrap-right">
+  <div class="back-button-container" style="position:absolute; top:20px; left:40px;"> 
+<img src="buttons-11.svg" class="back-button" onclick="goBack()" style="width:40px; height:40px;">
+   <img src="buttons-15.svg" class="instruction-button" onclick="openPopup()" alt="Instructions">
+</div>
+
+  <!-- Download button container -->
+  <div class="download-btn-container">
+    <button id="downloadBtn" onclick="downloadImage()" class="icon-btn">
+      <img src="buttons-08.svg" alt="Download" style="width:90px; height:64px; display:block;">
+    </button>
+  </div>
+
+      <!-- Right canvas -->
+   <div class="wrap-right">
+  <div id="canvasWrapper">
+    <canvas id="canvas" width="900" height="600"></canvas>
+    <div id="stickerLayer"></div>
+  </div>
+</div>
+
+
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="script.js"></script>
+
+  <div id="instruction-popup" class="popup-overlay">
+  <div class="popup-content">
+    <span class="close-button" onclick="closePopup()">×</span>
+    <img src="emoji title-05.svg" alt="Instruction SVG" class="instruction-svg">
+</div>
+
+  </div>
+</body>
+  <script>
+     function goBack() {
+      window.history.back();
+    }
+    function openPopup() {
+  document.getElementById("instruction-popup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("instruction-popup").style.display = "none";
+}
+
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tabContents.forEach(tc => tc.style.display = 'none');
+    const target = document.getElementById(btn.dataset.target);
+    target.style.display = 'block';
+  });
+});
+
+window.onload = function() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const userPhoto = localStorage.getItem('userPhoto');
+
+  if (userPhoto) {
+    const img = new Image();
+    img.onload = function() {
+      // Use naturalWidth/naturalHeight for true pixel dimensions
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Match stickerLayer size to canvas
+      const stickerLayer = document.getElementById('stickerLayer');
+      stickerLayer.style.width = canvas.width + 'px';
+      stickerLayer.style.height = canvas.height + 'px';
+      stickerLayer.style.position = 'absolute';
+      stickerLayer.style.left = canvas.offsetLeft + 'px';
+      stickerLayer.style.top = canvas.offsetTop + 'px';
+    };
+    img.src = userPhoto;
+  }
+};
+;
+// Add sticker as draggable/resizable element
+function addSticker(src, isFrame = false) {
+  const stickerLayer = document.getElementById('stickerLayer');
+  const sticker = document.createElement('div');
+  sticker.className = 'draggable-sticker';
+  // If this sticker is intended to be a frame, size it to cover the canvas/stickerLayer
+  if (isFrame) {
+    // make sticker fill stickerLayer
+    sticker.style.left = '0px';
+    sticker.style.top = '0px';
+    sticker.style.width = '100%';
+    sticker.style.height = '100%';
+    // frames: allow interaction but mark as frame for special handling
+    sticker.style.pointerEvents = 'auto';
+    sticker.dataset.isFrame = '1';
+  } else {
+    sticker.style.left = '40px';
+    sticker.style.top = '40px';
+    sticker.style.width = '80px';
+    sticker.style.height = '80px';
+    sticker.dataset.isFrame = '0';
+  }
+
+  const img = document.createElement('img');
+  img.src = src;
+  img.style.width = '100%';
+  img.style.height = '100%';
+  img.style.pointerEvents = 'none';
+  sticker.appendChild(img);
+  
+
+  // Insert frames at the bottom so other stickers always appear above frames.
+  if (isFrame) {
+    sticker.style.zIndex = '0';
+    stickerLayer.insertBefore(sticker, stickerLayer.firstChild);
+  } else {
+    sticker.style.zIndex = '5';
+    stickerLayer.appendChild(sticker);
+  }
+
+  // Add 4 resize handles
+  const corners = [
+    { name: 'tl', style: 'left:0;top:0;cursor:nwse-resize;' },
+    { name: 'tr', style: 'right:0;top:0;cursor:nesw-resize;' },
+    { name: 'bl', style: 'left:0;bottom:0;cursor:nesw-resize;' },
+    { name: 'br', style: 'right:0;bottom:0;cursor:nwse-resize;' }
+  ];
+  corners.forEach(corner => {
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle';
+    handle.dataset.corner = corner.name;
+    handle.style.cssText = corner.style + 'position:absolute;width:16px;height:16px;background:#fff;border:2px solid #3286f2;border-radius:3px;z-index:3;';
+    sticker.appendChild(handle);
+  });
+
+  // Add rotate handle
+  const rotateHandle = document.createElement('div');
+  rotateHandle.className = 'rotate-handle';
+  rotateHandle.title = 'Rotate';
+  rotateHandle.innerHTML = '⤾';
+  sticker.appendChild(rotateHandle);
+
+  // store rotation in degrees
+  sticker.dataset.rotation = '0';
+
+  // Drag logic (mouse + touch)
+  let offsetX, offsetY, isDragging = false;
+  let isResizing = false, startX, startY, startW, startH, startLeft, startTop, currentCorner;
+
+  function getEventXY(e) {
+    if (e.touches && e.touches.length) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  // Drag start
+  function dragStart(e) {
+    if (e.target.classList.contains('resize-handle')) return;
+    e.preventDefault();
+    isDragging = true;
+    // Only raise z-index for non-frame stickers so frames stay at the bottom
+    if (sticker.dataset.isFrame !== '1') {
+      sticker.style.zIndex = 10;
+    }
+    const { x, y } = getEventXY(e);
+    const rect = sticker.getBoundingClientRect();
+    // store pointer offset relative to the sticker's top-left
+    offsetX = x - rect.left;
+    offsetY = y - rect.top;
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+  }
+  function dragMove(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    const { x, y } = getEventXY(e);
+    const layerRect = stickerLayer.getBoundingClientRect();
+    const w = sticker.offsetWidth;
+    const h = sticker.offsetHeight;
+    // Compute new left/top relative to stickerLayer
+    const newLeft = x - layerRect.left - offsetX;
+    const newTop = y - layerRect.top - offsetY;
+    const maxLeft = Math.max(0, layerRect.width - w);
+    const maxTop = Math.max(0, layerRect.height - h);
+    const clampedLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    const clampedTop = Math.max(0, Math.min(newTop, maxTop));
+    sticker.style.left = clampedLeft + 'px';
+    sticker.style.top = clampedTop + 'px';
+  }
+  function dragEnd(e) {
+    isDragging = false;
+    // restore baseline z-index (frames at bottom)
+    if (sticker.dataset.isFrame === '1') sticker.style.zIndex = '0';
+    else sticker.style.zIndex = '5';
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+    document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('touchend', dragEnd);
+  }
+  sticker.addEventListener('mousedown', dragStart);
+  sticker.addEventListener('touchstart', dragStart, { passive: false });
+
+  // Activate sticker on click/tap (show handles)
+  function activateSticker(e) {
+    e.stopPropagation();
+    // deactivate others
+    document.querySelectorAll('.draggable-sticker').forEach(s => s.classList.remove('active'));
+    sticker.classList.add('active');
+  }
+  sticker.addEventListener('mousedown', activateSticker);
+  sticker.addEventListener('touchstart', activateSticker, { passive: true });
+
+  // Clicking outside should hide controls
+  document.addEventListener('mousedown', (ev) => {
+    if (!sticker.contains(ev.target)) {
+      sticker.classList.remove('active');
+    }
+  });
+  document.addEventListener('touchstart', (ev) => {
+    if (!sticker.contains(ev.target)) {
+      sticker.classList.remove('active');
+    }
+  }, { passive: true });
+
+  // Resize logic (mouse + touch)
+  function resizeStart(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    isResizing = true;
+    currentCorner = e.target.dataset.corner;
+    const { x, y } = getEventXY(e);
+    startX = x;
+    startY = y;
+    startW = sticker.offsetWidth;
+    startH = sticker.offsetHeight;
+    startLeft = sticker.offsetLeft;
+    startTop = sticker.offsetTop;
+    // preserve aspect ratio by default
+    sticker.dataset.aspect = (startW / startH) || 1;
+    document.addEventListener('mousemove', resizeMove);
+    document.addEventListener('mouseup', resizeEnd);
+    document.addEventListener('touchmove', resizeMove, { passive: false });
+    document.addEventListener('touchend', resizeEnd);
+  }
+  function resizeMove(e) {
+    if (!isResizing) return;
+    e.preventDefault();
+    const { x, y } = getEventXY(e);
+    let dx = x - startX;
+    let dy = y - startY;
+    let newW = startW, newH = startH, newLeft = startLeft, newTop = startTop;
+    const aspect = parseFloat(sticker.dataset.aspect) || (startW / startH) || 1;
+    switch (currentCorner) {
+      case 'tl':
+        // keep aspect ratio: base width change on horizontal movement
+        newW = Math.max(40, startW - dx);
+        newH = Math.max(40, Math.round(newW / aspect));
+        newLeft = startLeft + (startW - newW);
+        newTop = startTop + (startH - newH);
+        break;
+      case 'tr':
+        newW = Math.max(40, startW + dx);
+        newH = Math.max(40, Math.round(newW / aspect));
+        newTop = startTop + (startH - newH);
+        // keep left unchanged
+        break;
+      case 'bl':
+        newW = Math.max(40, startW - dx);
+        newH = Math.max(40, Math.round(newW / aspect));
+        newLeft = startLeft + (startW - newW);
+        break;
+      case 'br':
+        newW = Math.max(40, startW + dx);
+        newH = Math.max(40, Math.round(newW / aspect));
+        break;
+    }
+    sticker.style.width = newW + 'px';
+    sticker.style.height = newH + 'px';
+    sticker.style.left = newLeft + 'px';
+    sticker.style.top = newTop + 'px';
+  }
+  function resizeEnd(e) {
+    isResizing = false;
+    document.removeEventListener('mousemove', resizeMove);
+    document.removeEventListener('mouseup', resizeEnd);
+    document.removeEventListener('touchmove', resizeMove);
+    document.removeEventListener('touchend', resizeEnd);
+  }
+  sticker.querySelectorAll('.resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', resizeStart);
+    handle.addEventListener('touchstart', resizeStart,
+     { passive: false });
+  });
+  // Rotation logic
+  let isRotating = false;
+  let startAngle = 0;
+
+  function getCenter(el) {
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+  }
+
+  function rotationStart(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    isRotating = true;
+    sticker.style.zIndex = 20;
+    const { x, y } = getEventXY(e);
+    const center = getCenter(sticker);
+    startAngle = Math.atan2(y - center.y, x - center.x) * 180 / Math.PI;
+    document.addEventListener('mousemove', rotationMove);
+    document.addEventListener('mouseup', rotationEnd);
+    document.addEventListener('touchmove', rotationMove, { passive: false });
+    document.addEventListener('touchend', rotationEnd);
+  }
+
+  function rotationMove(e) {
+    if (!isRotating) return;
+    e.preventDefault();
+    const { x, y } = getEventXY(e);
+    const center = getCenter(sticker);
+    const angleNow = Math.atan2(y - center.y, x - center.x) * 180 / Math.PI;
+    const delta = angleNow - startAngle;
+    const current = parseFloat(sticker.dataset.rotation) || 0;
+    const newRot = current + delta;
+    sticker.dataset.rotation = newRot;
+    sticker.style.transform = `rotate(${newRot}deg)`;
+    // update startAngle for smooth continuous rotation
+    startAngle = angleNow;
+  }
+
+  function rotationEnd(e) {
+    isRotating = false;
+    sticker.style.zIndex = '';
+    document.removeEventListener('mousemove', rotationMove);
+    document.removeEventListener('mouseup', rotationEnd);
+    document.removeEventListener('touchmove', rotationMove);
+    document.removeEventListener('touchend', rotationEnd);
+  }
+
+  rotateHandle.addEventListener('mousedown', rotationStart);
+  rotateHandle.addEventListener('touchstart', rotationStart, { passive: false });
+  // Create delete button
+const deleteBtn = document.createElement('div');
+deleteBtn.className = 'delete-sticker-btn';
+deleteBtn.innerHTML = '✕';
+deleteBtn.style.cssText = `
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 20px;
+  height: 20px;
+  background: red;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 50%;
+  z-index: 5;
+  cursor: pointer;
+  touch-action: manipulation;
+`;
+
+// Delete logic (mouse + touch)
+deleteBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  sticker.remove();
+});
+deleteBtn.addEventListener('touchstart', e => {
+  e.stopPropagation();
+  sticker.remove();
+}, { passive: true });
+
+sticker.appendChild(deleteBtn);
+}
+
+// Download image (stickers not included in download, see note)
+function downloadImage() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const userPhoto = localStorage.getItem('userPhoto');
+  if (!userPhoto) return;
+  const img = new Image();
+  img.onload = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // Draw all stickers
+    const stickers = document.querySelectorAll('.draggable-sticker');
+    stickers.forEach(stickerEl => {
+      const imgEl = stickerEl.querySelector('img');
+      if (!imgEl) return;
+      // Calculate position relative to canvas
+   const canvasRect = canvas.getBoundingClientRect();
+const scaleX = canvas.width / canvasRect.width;
+const scaleY = canvas.height / canvasRect.height;
+
+const stickerRect = stickerEl.getBoundingClientRect();
+const x = (stickerRect.left - canvasRect.left) * scaleX;
+const y = (stickerRect.top - canvasRect.top) * scaleY;
+const w = stickerEl.offsetWidth * scaleX;
+const h = stickerEl.offsetHeight * scaleY;
+
+        // Handle rotation when drawing
+        const rotationDeg = parseFloat(stickerEl.dataset.rotation) || 0;
+        if (rotationDeg !== 0) {
+          ctx.save();
+          // translate to center of sticker in canvas coords
+          const cx = x + w/2;
+          const cy = y + h/2;
+          ctx.translate(cx, cy);
+          ctx.rotate(rotationDeg * Math.PI/180);
+          ctx.drawImage(imgEl, -w/2, -h/2, w, h);
+          ctx.restore();
+        } else {
+          ctx.drawImage(imgEl, x, y, w, h);
+        }
+    });
+
+     const dataUrl = canvas.toDataURL('image/png');
+    showQrPopup(dataUrl); // call a function to generate popup + QR
+  };
+
+  img.src = userPhoto;
+}
+window.downloadImage = downloadImage;
+function showQrPopup(dataUrl) {
+  const isLargeScreen = window.innerWidth > 768;
+
+  // --- Overlay ---
+  const overlay = document.createElement("div");
+  overlay.id = "resultPopup";
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0,0,0,0.8)";
+  overlay.style.display = "flex";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "9999";
+  document.body.appendChild(overlay);
+
+  // --- Card ---
+  const card = document.createElement("div");
+  card.style.background = "#9ccde9";
+  card.style.borderRadius = isLargeScreen ? "20px" : "0px";
+  card.style.padding = isLargeScreen ? "30px" : "20px";
+  card.style.textAlign = "center";
+  card.style.maxWidth = isLargeScreen ? "480px" : "100%";
+  card.style.width = isLargeScreen ? "90%" : "100%";
+  card.style.height = isLargeScreen ? "auto" : "100%";
+  card.style.overflowY = "auto";
+  overlay.appendChild(card);
+
+  // --- Title ---
+  const title = document.createElement("h2");
+  title.innerText = "Your Photo is Ready!";
+  title.style.marginBottom = "20px";
+  card.appendChild(title);
+
+  // --- Image preview ---
+  const imgPreview = document.createElement("img");
+  imgPreview.src = dataUrl;
+  imgPreview.style.maxWidth = "100%";
+  imgPreview.style.maxHeight = isLargeScreen ? "250px" : "150px";
+  imgPreview.style.borderRadius = "10px";
+  imgPreview.style.marginBottom = "20px";
+  card.appendChild(imgPreview);
+
+  // --- Contact Form ---
+  const form = document.createElement("form");
+  form.style.display = "flex";
+  form.style.flexDirection = "column";
+  form.style.alignItems = "center";
+  form.style.marginTop = "5px";
+
+  card.appendChild(form);
+
+// Example: shrink canvas before encoding
+const tmpCanvas = document.createElement('canvas');
+const ctx2 = tmpCanvas.getContext('2d');
+tmpCanvas.width = 100;
+tmpCanvas.height = 100;
+ctx2.drawImage(canvas, 0, 0, 100, 100);
+const smallDataUrl = tmpCanvas.toDataURL('image/png', 0.7);
+
+// --- QR Share Button ---
+const qrBtn = document.createElement("img");
+qrBtn.src = "buttons-13.svg";
+qrBtn.alt = "Save to phone";
+qrBtn.style.width = "200px";
+qrBtn.style.height = "70px";
+qrBtn.style.cursor = "pointer";
+qrBtn.onclick = (e) => {
+  e.preventDefault();
+  showQRPopup(dataUrl);
+};
+form.appendChild(qrBtn);
+
+card.appendChild(form);
+
+// --- Function: Show QR Popup ---
+async function showQRPopup(dataUrl) {
+  // Overlay popup
+  const popup = document.createElement('div');
+  popup.style.position = 'fixed';
+  popup.style.left = '0';
+  popup.style.top = '0';
+  popup.style.width = '100%';
+  popup.style.height = '100%';
+  popup.style.background = 'rgba(0,0,0,0.8)';
+  popup.style.display = 'flex';
+  popup.style.justifyContent = 'center';
+  popup.style.alignItems = 'center';
+  popup.style.zIndex = '10000';
+
+  const card = document.createElement('div');
+  card.style.background = '#fff';
+  card.style.borderRadius = '12px';
+  card.style.padding = '20px';
+  card.style.maxWidth = '420px';
+  card.style.width = '90%';
+  card.style.textAlign = 'center';
+  popup.appendChild(card);
+
+  const title = document.createElement('h3');
+  title.innerText = 'Scan to download your image';
+  title.style.marginTop = '0';
+  card.appendChild(title);
+
+  // QR container
+  const qrWrap = document.createElement('div');
+  qrWrap.style.margin = '12px auto';
+  qrWrap.style.padding = '10px';
+  qrWrap.style.background = '#f4f8fb';
+  qrWrap.style.display = 'inline-block';
+  qrWrap.innerText = 'Uploading image...';
+  card.appendChild(qrWrap);
+
+  const info = document.createElement('p');
+  info.style.fontSize = '14px';
+  info.style.color = '#333';
+  info.style.margin = '8px 0 12px';
+  card.appendChild(info);
+
+  document.body.appendChild(popup);
+
+  // --- Upload image to ImgBB ---
+  const API_KEY = "224412f894891f8338faa2129e2dcec5";
+  const formData = new FormData();
+  formData.append("image", dataUrl.split(",")[1]);
+
+  let imageUrl = null;
+  try {
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+      method: "POST",
+      body: formData,
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      imageUrl = result.data.url;
+    } else {
+      throw new Error("Upload failed.");
+    }
+  } catch (err) {
+    qrWrap.innerText = "❌ Upload failed. Try again later.";
+    info.innerText = err.message;
+    card.appendChild(makeCloseButton(popup));
+    return;
+  }
+
+  // --- Generate QR code for hosted image ---
+  qrWrap.innerHTML = "";
+  new QRCode(qrWrap, {
+    text: imageUrl,
+    width: 220,
+    height: 220,
+    correctLevel: QRCode.CorrectLevel.L,
+  });
+
+  info.innerText = "Scan with your phone camera or tap the button below to open/download.";
+
+
+  // Close button
+  card.appendChild(makeCloseButton(popup));
+}
+
+// --- Helper: Close button ---
+function makeCloseButton(popup) {
+  const closeBtn = document.createElement('button');
+  closeBtn.innerText = 'Close';
+  closeBtn.style.margin = '8px';
+  closeBtn.style.padding = '8px 12px';
+  closeBtn.style.borderRadius = '8px';
+  closeBtn.style.border = 'none';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.onclick = () => document.body.removeChild(popup);
+  return closeBtn;
+}
+
+  // --- Download Button ---
+ const downloadBtn = document.createElement("img");
+downloadBtn.src = "buttons-12.svg";
+downloadBtn.alt = "Download Photo";
+downloadBtn.style.width = "200px";
+downloadBtn.style.height = "70px";
+  downloadBtn.style.cursor = "pointer";
+  downloadBtn.onclick = () => {
+    const link = document.createElement('a');
+    link.download = 'decorated-photo.png';
+    link.href = dataUrl;
+    link.click();
+  };
+  card.appendChild(downloadBtn);
+
+  // --- Countdown + Restart ---
+  let countdown = 150;
+  const countdownText = document.createElement("p");
+  countdownText.style.marginTop = "10px";
+  countdownText.style.fontSize = "14px";
+  countdownText.style.color = "#555";
+  countdownText.innerText = `This will reset in ${countdown} seconds...`;
+  card.appendChild(countdownText);
+
+  const timer = setInterval(() => {
+    countdown--;
+    countdownText.innerText = `This will reset in ${countdown} seconds...`;
+    if (countdown <= 0) {
+      clearInterval(timer);
+      window.location.href = "index.html";
+    }
+  }, 1000);
+
+  const restartBtn = document.createElement("img");
+restartBtn.src = "buttons-14.svg";
+restartBtn.alt = "Restart";
+restartBtn.style.width = "120px";
+restartBtn.style.height = "60px";
+  restartBtn.style.cursor = "pointer";
+  restartBtn.onclick = () => {
+    clearInterval(timer);
+    window.location.href = "index.html";
+  };
+  card.appendChild(restartBtn);
+}
+
+</script>
+<script>
